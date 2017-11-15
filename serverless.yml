@@ -23,13 +23,13 @@ package:
     - requirements.txt
 
 functions:
-  hello:
-    handler: handler.hello
+
+  webhook:
+    handler: handler.webhook
     memorySize: 128
     timeout: 20
     events:
       - http:
-          path: hello
-          method: get
+          path: webhook
+          method: post
           integration: lambda
-          cors: true
