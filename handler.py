@@ -87,7 +87,7 @@ def handle_property_value(data):
     return {
       'source': 'Hackaetano',
       'followupEvent': {
-        'name': 'UNKNOWN'
+        'name': 'UNKNOWN_USER'
       }
     }
 
@@ -110,7 +110,7 @@ def handle_property_value(data):
 
   put_user(user_id, user)
 
-  recommendations = recommendations_by_property(data)
+  recommendations = get_recommendations(data)
 
   return {
     'source': 'Hackaetano',
@@ -147,7 +147,7 @@ def handle_familiar_value(data):
 
   res = put_user(user_id, user)
 
-  recommendations = recommendations_by_familiar(user)
+  recommendations = get_recommendations(user)
 
   return {
     'source': 'Hackaetano',
@@ -176,8 +176,6 @@ def handle_register_user(data):
   else:
     email = original['email']
 
-  print('aqui4')
-
   user = {
     'personal': {
       'name': register['name'],
@@ -195,10 +193,7 @@ def handle_register_user(data):
 
   res = post_user(user)
 
-  print('aqui5')
-  print(register)
-
-  recommendations = recommendations_by_addrs(register['address'])
+  recommendations = get_recommendations(register['address'])
 
   return {
     'source': 'Hackaetano',
@@ -246,59 +241,21 @@ def get_api_user(email):
 
   return data['results'][0]  
 
-def recommendations_by_addrs(address):
-  return {
-    'title1': 'Liber 1000, 32-547 m².',
-    'text1': 'Descrição a definir',
-    'img1': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',
+def get_user_recommended_properties(user):
+  res = requests.get('{}/properties'.format(API_ENDPOINT))
+  return res.json()['results']
 
-    'title2': 'Liber 1000, 32-547 m².',
-    'text2': 'Descrição a definir',
-    'img2': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',
+def get_recommendations(user):
+  properties = get_user_recommended_properties(user)
+  obj = {}
 
-    'title3': 'Liber 1000, 32-547 m².',
-    'text3': 'Descrição a definir',
-    'img3': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',    
+  for idx, _property in enumerate(properties[:9]):
+    aux, i = {}, str(idx+1)    
+    
+    aux['title'+i] = _property['characteristics']['title']
+    aux['text'+i] = _property['characteristics']['propertyType']
+    aux['img'+i] = _property['characteristics']['images'][0]
 
-    'title4': 'Liber 1000, 32-547 m².',
-    'text4': 'Descrição a definir',
-    'img4': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg'
-  }
+    obj.update(aux)
 
-def recommendations_by_property(property):
-  return {
-    'title1': 'Liber 1000, 32-547 m².',
-    'text1': 'Descrição a definir',
-    'img1': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',
-
-    'title2': 'Liber 1000, 32-547 m².',
-    'text2': 'Descrição a definir',
-    'img2': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',
-
-    'title3': 'Liber 1000, 32-547 m².',
-    'text3': 'Descrição a definir',
-    'img3': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',    
-
-    'title4': 'Liber 1000, 32-547 m².',
-    'text4': 'Descrição a definir',
-    'img4': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg'
-  }
-
-def recommendations_by_familiar(user):
-  return {
-    'title1': 'Liber 1000, 32-547 m².',
-    'text1': 'Descrição a definir',
-    'img1': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',
-
-    'title2': 'Liber 1000, 32-547 m².',
-    'text2': 'Descrição a definir',
-    'img2': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',
-
-    'title3': 'Liber 1000, 32-547 m².',
-    'text3': 'Descrição a definir',
-    'img3': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg',    
-
-    'title4': 'Liber 1000, 32-547 m².',
-    'text4': 'Descrição a definir',
-    'img4': 'https://resizedimgs.vivareal.com/4TnF4eH3iJXGRyq21rfk6FOPZQM=/fit-in/685x457/vr.images.sp/7cc05eda75ee252c188b581d09878033.jpg'
-  }
+  return obj
