@@ -1,0 +1,35 @@
+service: 
+  name: hackaetano-chatbot
+
+plugins:
+  - serverless-python-requirements
+
+provider:
+  name: aws
+  runtime: python3.6
+  stage: dev
+  region: sa-east-1
+  profile: diego
+
+package:
+  exclude:
+    - node_modules/**
+    - .idea/**
+    - .requirements/**
+    - env/**
+    - README.md
+    - package.json
+    - package-lock.json
+    - requirements.txt
+
+functions:
+  hello:
+    handler: handler.hello
+    memorySize: 128
+    timeout: 20
+    events:
+      - http:
+          path: hello
+          method: get
+          integration: lambda
+          cors: true
