@@ -77,7 +77,7 @@ def handle_property_value(data):
   user_id = None
 
   for context in contexts:
-    if context['name'] == 'loggedUser':
+    if context['name'] == 'loggeduser':
       if 'id' in context['parameters']:
         user_id = context['parameters']['id']
       else:
@@ -110,7 +110,7 @@ def handle_property_value(data):
 
   put_user(user_id, user)
 
-  recommendations = get_recommendations(data)
+  recommendations = get_recommendations({'id': user_id})
 
   return {
     'source': 'Hackaetano',
@@ -147,7 +147,7 @@ def handle_familiar_value(data):
 
   res = put_user(user_id, user)
 
-  recommendations = get_recommendations(user)
+  recommendations = get_recommendations({'id': user_id})
 
   return {
     'source': 'Hackaetano',
@@ -157,7 +157,7 @@ def handle_familiar_value(data):
     },
     'contextOut': [
       {
-        'name': 'loggedUser',
+        'name': 'loggeduser',
         'lifespan': 10,
         'parameters': {
           'email': email,
@@ -193,7 +193,7 @@ def handle_register_user(data):
 
   res = post_user(user)
 
-  recommendations = get_recommendations(register['address'])
+  recommendations = get_recommendations({'id': res['_id']})
 
   return {
     'source': 'Hackaetano',
@@ -203,7 +203,7 @@ def handle_register_user(data):
     },
     'contextOut': [
       {
-        'name': 'loggedUser',
+        'name': 'loggeduser',
         'lifespan': 10,
         'parameters': {
           'email': email,
@@ -242,11 +242,18 @@ def get_api_user(email):
   return data['results'][0]  
 
 def get_user_recommended_properties(user):
-  res = requests.get('{}/properties'.format(API_ENDPOINT))
+  if '_id' in user:
+    user_id = user['_id']
+  if 'id' in user:
+    user_id = user['id']
+
+  res = requests.get('{}/users/{}/matches'.format(API_ENDPOINT, user_id))
   return res.json()['results']
 
 def get_recommendations(user):
   properties = get_user_recommended_properties(user)
+  random.shuffle(properties)
+
   obj = {}
 
   for idx, _property in enumerate(properties[:9]):
@@ -254,7 +261,12 @@ def get_recommendations(user):
     
     aux['title'+i] = _property['characteristics']['title']
     aux['text'+i] = _property['characteristics']['propertyType']
-    aux['img'+i] = _property['characteristics']['images'][0]
+    
+    images = _property['characteristics']['images']
+    random.shuffle(images)
+
+    aux['img'+i] = images[0]
+    aux['url'+i] = 'https://vivareal.com.br' + _property['source']['url']
 
     obj.update(aux)
 
